@@ -12,6 +12,6 @@ CREATE TABLE `client_list`.`client` (
   PRIMARY KEY (`id`));
   
 INSERT INTO client(id, name, last_name, email, create_at)
-VALUES ('1D25FE', 'Jonh', 'Richars', 'john.richars@maiil.com', '1987-10-21');
+VALUES ('42b40eef-045c-4f6b-b', 'Jonh', 'Richars', 'john.richars@maiil.com', '1987-10-21');
 
 select * from client;

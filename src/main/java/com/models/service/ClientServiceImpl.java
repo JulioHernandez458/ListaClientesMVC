@@ -41,17 +41,16 @@ public class ClientServiceImpl implements IClientService{
 		if(client.getId() == null) {
 			
 			try {
-				client.setId(UUID.randomUUID().toString());
-				log.info(client.toString());
+				client.setId(UUID.randomUUID().toString().substring(0, 20));
 				repo.save(client);
+				log.info("NEW CLIENT SAVED...OK");
 			} catch (Throwable e) {
 				throw e;
 			}
 			
 		} else { //if client exists = UPDATE
-			log.info("Service ##########");
-			log.info(client.toString());
 			repo.save(client);
+			log.info("CLIENT UPDATED...OK");
 		}
 		
 	}

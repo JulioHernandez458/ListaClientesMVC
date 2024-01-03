@@ -38,19 +38,22 @@ public class ClientController {
 	@GetMapping("/show/{id}")
 	public String showClient(@PathVariable String id, Model model, RedirectAttributes flash) {
 
+		log.info("LOOKING FOR CLIENT...");
 		Client client = service.findOne(id);
 		if (client == null) {
+			log.info("cLIENT NOT FOUND...");
 			flash.addFlashAttribute("error", "Client Not Exists!");
 			return "redirect:/";
 		}
 
+		log.info("CLIENT FOUND...OK");
 		model.addAttribute("client", client);
 		model.addAttribute("title", "Client: " + client.getName());
 		return "show";
 	}
 	
 	@GetMapping(value = "/form")
-	public String crear(Model model) {
+	public String getForm(Model model) {
 
 		model.addAttribute("client", new Client());
 		model.addAttribute("titulo", "New Client Form");
@@ -63,16 +66,19 @@ public class ClientController {
 		Client client = null;
 
 		if (!id.isEmpty()) {
+			log.info("LOOKING FOR CLIENT...");
 			client = service.findOne(id);
 			if (client == null) {
+				log.info("CLIENT NOT FOUND...");
 				flash.addFlashAttribute("error", "Client ID Not Exists!");
 				return "redirect:/";
 			}
 		} else {
+			log.info("CLIENT ID IS EMPTY...");
 			flash.addFlashAttribute("error", "ID Must Not Be Empty!");
 			return "redirect:/";
 		}
-		log.info(client.toString());
+		log.info("CLIENT FOUND...OK");
 		model.addAttribute("client", client);
 		model.addAttribute("title", "Edit Client");
 		return "form";
@@ -81,18 +87,26 @@ public class ClientController {
 	@PostMapping("/form")
 	public String postClient(@Valid Client client, BindingResult result, Model model,
 			/*@RequestParam("file") MultipartFile photo,*/ RedirectAttributes flash, SessionStatus status) {
-		if (result.hasErrors()) {
+		
+		try {
+			
+			if (result.hasErrors()) {
+				model.addAttribute("title", "New Client Form");
+				return "form";
+			}
+			
+			String messageFlash = (client.getId() != null) ? "Client Has Been Updated!" : "Client Has Been Created!";
+			
+			service.save(client);
+			status.setComplete();
+			flash.addFlashAttribute("success", messageFlash);
 			model.addAttribute("title", "New Client Form");
 			
-			return "form";
+		} catch (Exception e) {
+			log.info(e.toString());
+			throw e;
 		}
 		
-		String messageFlash = (client.getId() != null) ? "Client Has Been Updated!" : "Client Has Been Created!";
-		
-		service.save(client);
-		status.setComplete();
-		flash.addFlashAttribute("success", messageFlash);
-		model.addAttribute("title", "New Client Form");
 		return "redirect:/";
 	}
 	
@@ -100,17 +114,30 @@ public class ClientController {
 	
 	@GetMapping("/delete/{id}")
 	public String deleteClient(@PathVariable String id, Model model, RedirectAttributes flash) {
-		Client client = null;
+		
+		try {
+			
+			Client client = null;
 
-		if (!id.isEmpty()) {
-			client = service.findOne(id);
-			if (client != null) {
-				service.delete(id);
-				flash.addFlashAttribute("success", "Client Has Been Deleted!");
+			if (!id.isEmpty()) {
+				log.info("LOOKING FOR CLIENT...");
+				client = service.findOne(id);
+				if (client != null) {
+					log.info("CLIENT FOUND...OK");
+					service.delete(id);
+					log.info("CLIENT DELETED...OK");
+					flash.addFlashAttribute("success", "Client Has Been Deleted!");
+				}
+			} else {
+				log.info("CLIENT ID IS EMPTY...");
+				flash.addFlashAttribute("error", "ID Must Not Be Empty!");
 			}
-		} else {
-			flash.addFlashAttribute("error", "ID Must Not Be Empty!");
+			
+		} catch (Exception e) {
+			log.info(e.toString());
+			throw e;
 		}
+		
 		return "redirect:/";
 		
 	}
