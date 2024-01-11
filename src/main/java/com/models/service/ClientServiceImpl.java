@@ -37,20 +37,19 @@ public class ClientServiceImpl implements IClientService{
 	@Transactional
 	public void save(Client client) {
 		
-		//If new client = CREATE
-		if(client.getId() == null) {
-			
-			try {
+		try {
+			// If new client = CREATE
+			if (client.getId() == null) {
 				client.setId(UUID.randomUUID().toString().substring(0, 20));
 				repo.save(client);
 				log.info("NEW CLIENT SAVED...OK");
-			} catch (Throwable e) {
-				throw e;
+			} else { // if client exists = UPDATE
+				repo.save(client);
+				log.info("CLIENT UPDATED...OK");
 			}
-			
-		} else { //if client exists = UPDATE
-			repo.save(client);
-			log.info("CLIENT UPDATED...OK");
+		} catch (Throwable e) {
+			log.error(e.toString());
+			throw e;
 		}
 		
 	}

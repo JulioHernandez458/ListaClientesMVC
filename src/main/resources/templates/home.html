@@ -28,8 +28,8 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr th:each="client: ${clients}">
-							<td><a class="btn btn-primary btn-xs" th:href="@{/show/} + ${client.id}" th:text="${client.id}"></a></td>
+						<tr th:each="client,iterator : ${clients}">
+							<td><a class="btn btn-primary btn-xs" th:href="@{/show/} + ${client.id}" th:text="${iterator.index + 1 }"></a></td>
 							<td th:text="${client.name}"></td>
 							<td th:text="${client.lastName}"></td>
 							<td th:text="${client.email}"></td>
