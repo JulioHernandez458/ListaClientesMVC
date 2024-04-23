@@ -3,8 +3,10 @@ package com.controllers;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.Collection;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.slf4j.*;
@@ -12,6 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -26,6 +34,7 @@ import com.models.service.IUploadFileService;
 
 @Controller
 @SessionAttributes("client")
+//@RequestMapping("/clients")
 public class ClientController {
 	
 	private final Logger log = LoggerFactory.getLogger(getClass());
@@ -37,6 +46,7 @@ public class ClientController {
 	private IUploadFileService uploadFileService;
 	
 	
+	@Secured("ROLE_USER")
 	@GetMapping(value = "/uploads/{filename:.+}")
 	public ResponseEntity<Resource> showPhoto(@PathVariable String filename) throws MalformedURLException {
 
@@ -56,16 +66,44 @@ public class ClientController {
 	
 	
 	
-	@GetMapping({"","/"})
-	public String getClients(Model model) throws Throwable {
+	@GetMapping({"/",""})
+	public String getClients(Model model, Authentication authentication, HttpServletRequest request) throws Throwable {
 		
+		if(authentication != null)
+			log.info(authentication.getName() + ", Logged in...OK");
+		
+		
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		
+		if(hasRole("ROLE_ADMIN")) {
+			log.info(auth.getName().concat(", Access Granted!!"));
+		} else {
+			log.info(auth.getName().concat(", Access Denied!!"));
+		}
+		
+		SecurityContextHolderAwareRequestWrapper securityContext = new SecurityContextHolderAwareRequestWrapper(request, "");
+		
+		if(securityContext.isUserInRole("ROLE_ADMIN")) {
+			log.info("Using SecurityContextHolderAwareRequestWrapper: ".concat(auth.getName()).concat(", Access Granted!!"));
+		} else {
+			log.info("Using SecurityContextHolderAwareRequestWrapper: ".concat(auth.getName()).concat(", Access Denied!!"));
+		}
+
+		if(request.isUserInRole("ROLE_ADMIN")) {
+			log.info("Using HttpServletRequest: ".concat(auth.getName()).concat(", Access Granted!!"));
+		} else {
+			log.info("Using HttpServletRequest: ".concat(auth.getName()).concat(", Access Denied!"));
+		}	
+		
+			
 		List<Client> clients = service.findAll();
 		
-		model.addAttribute("title", "Client List");
+		model.addAttribute("title", "Clients List");
 		model.addAttribute("clients", clients);
 		return "home";
 	}
 	
+	@Secured({"ROLE_USER","ROLE_ADMIN"})
 	@GetMapping("/show/{id}")
 	public String showClient(@PathVariable String id, Model model, RedirectAttributes flash) {
 
@@ -84,6 +122,7 @@ public class ClientController {
 		return "show";
 	}
 	
+	@Secured("ROLE_ADMIN")
 	@GetMapping(value = "/form")
 	public String getForm(Model model) {
 
@@ -92,6 +131,7 @@ public class ClientController {
 		return "form";
 	}
 	
+	@Secured("ROLE_ADMIN")
 	@GetMapping("/form/{id}")
 	public String editClient(@PathVariable String id, Model model, RedirectAttributes flash) {
 
@@ -116,6 +156,7 @@ public class ClientController {
 		return "form";
 	}
 	
+	@Secured("ROLE_ADMIN")
 	@PostMapping("/form")
 	public String postClient(@Valid Client client, BindingResult result, Model model,
 			@RequestParam("file") MultipartFile photo, RedirectAttributes flash, SessionStatus status) throws Throwable {
@@ -142,7 +183,7 @@ public class ClientController {
 					throw e;
 				}
 
-				flash.addFlashAttribute("info", "Has subido correctamente '" + uniqueFilename + "'");
+				//flash.addFlashAttribute("info", "You've uploaded '" + uniqueFilename + "'");
 				client.setPhoto(uniqueFilename);
 			}
 			
@@ -161,8 +202,7 @@ public class ClientController {
 		return "redirect:/";
 	}
 	
-	
-	
+	@Secured("ROLE_ADMIN")
 	@GetMapping("/delete/{id}")
 	public String deleteClient(@PathVariable String id, Model model, RedirectAttributes flash) {
 		
@@ -178,8 +218,10 @@ public class ClientController {
 					service.delete(id);
 					log.info("CLIENT DELETED...OK");
 					flash.addFlashAttribute("success", "Client Has Been Deleted!");
-					if (uploadFileService.delete(client.getPhoto())) {
-						flash.addFlashAttribute("info", "Photo " + client.getPhoto() + " Deleted!");
+					if(client.getPhoto() != null) {
+						if (uploadFileService.delete(client.getPhoto())) {
+							flash.addFlashAttribute("info", "Photo " + client.getPhoto() + " Deleted!");
+						}
 					}
 				}
 			} else {
@@ -195,4 +237,34 @@ public class ClientController {
 		return "redirect:/";
 		
 	}
+	
+	
+	private boolean hasRole(String role) {
+
+		SecurityContext context = SecurityContextHolder.getContext();
+
+		if (context == null) {
+			return false;
+		}
+
+		Authentication auth = context.getAuthentication();
+
+		if (auth == null) {
+			return false;
+		}
+
+		Collection<? extends GrantedAuthority> authorities = auth.getAuthorities();
+
+		for (GrantedAuthority authority : authorities) {
+			if (role.equals(authority.getAuthority())) {
+				log.info("User: ".concat(auth.getName())
+						.concat(", Role: ".concat(authority.getAuthority())));
+				return true;
+			}
+		}
+
+		return false;
+
+	}
+
 }

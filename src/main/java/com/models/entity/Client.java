@@ -33,11 +33,17 @@ public class Client implements Serializable{
 	@Column(name = "email")
 	private String email;
 	
+	@Column(name = "phone_number")
+	private Integer phoneNumber;
+	
+	@Column(name = "country")
+	private String country;
+	
 	@NotNull
-	@Column(name = "create_at")
+	@Column(name = "date_born")
 	@Temporal(TemporalType.DATE)
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
-	private Date createAt;
+	private Date dateBorn;
 	
 	@Column(name = "photo")
 	private String photo;
@@ -48,77 +54,125 @@ public class Client implements Serializable{
 		
 	}
 
-	public Client(String name, String lastName, String email, Date createAt, String photo) {
+
+
+	public Client(@NotEmpty String name, @NotEmpty String lastName, @NotEmpty @Email String email, Integer phoneNumber,
+			String country, @NotNull Date dateBorn, String photo) {
+		super();
 		this.name = name;
 		this.lastName = lastName;
 		this.email = email;
-		this.createAt = createAt;
+		this.phoneNumber = phoneNumber;
+		this.country = country;
+		this.dateBorn = dateBorn;
 		this.photo = photo;
 	}
 
-	public Client(String id, String name, String lastName, String email, Date createAt, String photo) {
-		this.id = id;
-		this.name = name;
-		this.lastName = lastName;
-		this.email = email;
-		this.createAt = createAt;
-		this.photo = photo;
-	}
-	
+
 
 	public String getId() {
 		return id;
 	}
 
+
+
 	public void setId(String id) {
 		this.id = id;
 	}
+
+
 
 	public String getName() {
 		return name;
 	}
 
+
+
 	public void setName(String name) {
 		this.name = name;
 	}
+
+
 
 	public String getLastName() {
 		return lastName;
 	}
 
+
+
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
 	}
+
+
 
 	public String getEmail() {
 		return email;
 	}
 
+
+
 	public void setEmail(String email) {
 		this.email = email;
 	}
 
-	public Date getCreateAt() {
-		return createAt;
+
+
+	public Integer getPhoneNumber() {
+		return phoneNumber;
 	}
 
-	public void setCreateAt(Date createAt) {
-		this.createAt = createAt;
+
+
+	public void setPhoneNumber(Integer phoneNumber) {
+		this.phoneNumber = phoneNumber;
 	}
+
+
+
+	public String getCountry() {
+		return country;
+	}
+
+
+
+	public void setCountry(String country) {
+		this.country = country;
+	}
+
+
+
+	public Date getDateBorn() {
+		return dateBorn;
+	}
+
+
+
+	public void setDateBorn(Date dateBorn) {
+		this.dateBorn = dateBorn;
+	}
+
+
 
 	public String getPhoto() {
 		return photo;
 	}
 
+
+
 	public void setPhoto(String photo) {
 		this.photo = photo;
 	}
+	
+
 
 	@Override
 	public String toString() {
-		return "Client [id= " + id + ", name= " + name + ", lastName= " + lastName + ", email= "
-				+ email + ", createAt= "+ createAt + ", photo= " + photo + "]";
+		return "Client [id=" + id + ", name=" + name + ", lastName=" + lastName + ", email=" + email + ", phoneNumber="
+				+ phoneNumber + ", country=" + country + ", dateBorn=" + dateBorn + ", photo=" + photo + "]";
 	}
+
+	
 	
 	
 	

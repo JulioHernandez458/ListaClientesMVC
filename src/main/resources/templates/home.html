@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="layout/layout :: head"></head>
 <body>
 
@@ -12,31 +12,35 @@
 			<div class="card-body">
 
 				<h4 class="card-title">
-					<a th:href="@{/form}" class="btn btn-primary">New Client</a>
+					<a sec:authorize="hasRole('ROLE_ADMIN')" th:href="@{/form}" class="btn btn-primary">New Client</a>
 				</h4>
 
 				<table class="table table-striped">
 					<thead>
 						<tr>
-							<th>id</th>
+							<th sec:authorize="hasRole('ROLE_USER')">id</th>
 							<th>Name</th>
 							<th>Last Name</th>
 							<th>Email</th>
-							<th>Date of Birth</th>
-							<th>Edit</th>
-							<th>Delete</th>
+							<th>Phone</th>
+							<th>Country</th>
+							<th>BirthDate</th>
+							<th sec:authorize="hasRole('ROLE_ADMIN')">Edit</th>
+							<th sec:authorize="hasRole('ROLE_ADMIN')">Delete</th>
 						</tr>
 					</thead>
 					<tbody>
 						<tr th:each="client,iterator : ${clients}">
-							<td><a class="btn btn-primary btn-xs" th:href="@{/show/} + ${client.id}" th:text="${iterator.index + 1 }"></a></td>
+							<td sec:authorize="hasRole('ROLE_USER')"><a class="btn btn-primary btn-xs" th:href="@{/show/} + ${client.id}" th:text="${iterator.index + 1 }"></a></td>
 							<td th:text="${client.name}"></td>
 							<td th:text="${client.lastName}"></td>
 							<td th:text="${client.email}"></td>
-							<td th:text="${client.createAt}"></td>
-							<td><a class="btn btn-primary btn-sm"
+							<td th:text="${client.phoneNumber}"></td>
+							<td th:text="${client.country}"></td>
+							<td th:text="${client.dateBorn}"></td>
+							<td sec:authorize="hasRole('ROLE_ADMIN')"><a class="btn btn-primary btn-sm"
 								th:href="@{/form/} + ${client.id}" th:text="'Edit'"></a></td>
-							<td><a class="btn btn-danger btn-sm"
+							<td sec:authorize="hasRole('ROLE_ADMIN')"><a class="btn btn-danger btn-sm"
 								th:href="@{/delete/} + ${client.id}" th:text="'Delete'"
 								onclick="return confirm('Are you sure you want to delete it?');"></a></td>
 						</tr>
